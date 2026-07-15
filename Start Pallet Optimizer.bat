@@ -3,6 +3,7 @@ setlocal
 cd /d "%~dp0"
 title Pallet Optimizer HTML
 set "PORT=8080"
+if not exist "logs" mkdir "logs"
 where py >nul 2>nul && set "PY=py"
 if not defined PY where python >nul 2>nul && set "PY=python"
 if not defined PY (
