@@ -1,0 +1,10 @@
+{
+  "name": "Pallet Optimizer HTML",
+  "slug": "pallet-optimizer-html",
+  "version": "0.1.0",
+  "description": "Volledig statische palletcalculator in HTML, CSS en JavaScript.",
+  "preview": "docs/previews/latest.svg",
+  "start_command": "Start Pallet Optimizer.bat",
+  "default_port": 8080,
+  "health_url": "http://127.0.0.1:8080/"
+}
