@@ -10,31 +10,110 @@
   <title>Pallet Optimizer</title>
 </head>
 <body>
-<header class="topbar"><div class="topbar-inner">
-  <a class="brand" href="./" aria-label="Pallet Optimizer home"><span class="brand-icon">▦</span><span><strong>Pallet Optimizer</strong><small>Calculate a pallet layout in one clear view.</small></span></a>
-  <button id="downloadResult" class="download-button" type="button" disabled>⇩ Download result</button>
-</div></header>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="./" aria-label="Pallet Optimizer home">
+      <span class="brand-icon">▦</span>
+      <span><strong>Pallet Optimizer</strong><small>Calculate a pallet layout in one clear view.</small></span>
+    </a>
+    <button id="downloadResult" class="download-button" type="button" disabled>⇩ Download result</button>
+  </div>
+</header>
+
 <main class="workspace">
-<section class="panel input-panel">
-<header class="panel-heading"><span>INPUT</span></header>
-<form id="calculatorForm" novalidate>
-<div class="field"><span>Pallet type</span><div class="segmented-control"><button type="button" class="active" data-pallet-mode="preset">Preset</button><button type="button" data-pallet-mode="custom">Custom</button></div></div>
-<label class="field" id="presetPalletField"><span>Preset pallet</span><select id="pallet_id"><option value="euro">Europallet (1200 × 800 × 144 mm)</option><option value="block">Block pallet (1200 × 1000 × 144 mm)</option><option value="half">Half pallet (800 × 600 × 144 mm)</option></select></label>
-<div class="custom-pallet-grid" id="customPalletFields" hidden><label class="field"><span>Length</span><div class="unit-input"><input id="custom_pallet_length_mm" type="number" min="1" value="1200"><em>mm</em></div></label><label class="field"><span>Width</span><div class="unit-input"><input id="custom_pallet_width_mm" type="number" min="1" value="800"><em>mm</em></div></label><label class="field"><span>Height</span><div class="unit-input"><input id="custom_pallet_height_mm" type="number" min="1" value="144"><em>mm</em></div></label></div>
-<div class="field-group"><div class="group-title">Box dimensions <b>(L × W × H)</b></div><div class="dimension-grid"><label class="field"><span>Length <b>(L)</b></span><div class="unit-input"><input id="box_length_mm" type="number" min="1" value="400" required><em>mm</em></div></label><label class="field"><span>Width <b>(W)</b></span><div class="unit-input"><input id="box_width_mm" type="number" min="1" value="300" required><em>mm</em></div></label><label class="field"><span>Height <b>(H)</b></span><div class="unit-input"><input id="box_height_mm" type="number" min="1" value="250" required><em>mm</em></div></label></div></div>
-<div class="field"><span>Include pallet in height calculation</span><div class="segmented-control"><button type="button" class="active" data-height-mode="inclusive">Include pallet</button><button type="button" data-height-mode="exclusive">Exclude pallet</button></div></div>
-<label class="field"><span id="heightLabel">Maximum pallet height <b>(including pallet)</b></span><div class="unit-input"><input id="max_total_height_mm" type="number" min="1" value="1800" required><em>mm</em></div></label>
-<label class="field"><span>Case quantity <b>(items per box)</b></span><div class="unit-input"><input id="case_quantity" type="number" min="1" value="12" required><em>items</em></div></label>
-<button class="primary-button" type="submit">▦ Calculate pallet</button>
-<aside id="heightAdvice" class="advice-card"><span>↗</span><p id="heightAdviceText">Calculate the pallet to see height advice.</p></aside>
-<div id="formError" class="error-message" hidden></div>
-</form></section>
-<section class="panel result-panel" id="resultCard" tabindex="-1">
-<header class="panel-heading result-heading"><span>RESULT</span><small id="resultSubtitle">Europallet · 1200 × 800 × 144 mm</small></header>
-<div class="metric-grid">
-<article><span>Boxes per layer</span><strong id="boxesPerLayer">8</strong></article><article><span>Number of layers</span><strong id="layers">6</strong></article><article><span>Boxes per pallet</span><strong id="boxesPerPallet">48</strong></article><article><span>Case quantity</span><strong id="caseQuantityResult">12</strong></article><article><span>Pallet quantity</span><strong id="palletQuantity">576</strong></article><article><span>Total height</span><strong id="totalHeight">1644 mm</strong></article>
-</div>
-<section class="visual-card"><div class="visual-title">Pallet visualization <small id="solverStatus"></small></div><div class="canvas-wrap"><canvas id="palletCanvas" width="1100" height="620"></canvas></div><div class="height-summary"><span><small>Pallet height</small><strong id="palletHeight">144 mm</strong></span><span><small>Load height</small><strong id="loadHeight">1500 mm</strong></span><span><small>Total height</small><strong id="heightSummaryTotal">1644 mm</strong></span></div></section>
-</section></main>
-<script src="assets/optimizer.js"></script><script src="assets/app.js"></script>
-</body></html>
+  <section class="panel input-panel">
+    <header class="panel-heading"><span>INPUT</span></header>
+    <form id="calculatorForm" novalidate>
+      <div class="field compact-pallet">
+        <span>Pallet</span>
+        <div class="pallet-row">
+          <div class="segmented-control pallet-mode">
+            <button type="button" class="active" data-pallet-mode="preset">Preset</button>
+            <button type="button" data-pallet-mode="custom">Custom</button>
+          </div>
+          <label id="presetPalletField" class="select-wrap">
+            <select id="pallet_id">
+              <option value="euro">Europallet · 1200 × 800 × 144 mm</option>
+              <option value="block">Block pallet · 1200 × 1000 × 144 mm</option>
+              <option value="half">Half pallet · 800 × 600 × 144 mm</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="custom-pallet-grid" id="customPalletFields" hidden>
+        <label class="mini-field"><span>Length</span><div class="unit-input"><input id="custom_pallet_length_mm" type="number" min="1" value="1200"><em>mm</em></div></label>
+        <label class="mini-field"><span>Width</span><div class="unit-input"><input id="custom_pallet_width_mm" type="number" min="1" value="800"><em>mm</em></div></label>
+        <label class="mini-field"><span>Height</span><div class="unit-input"><input id="custom_pallet_height_mm" type="number" min="1" value="144"><em>mm</em></div></label>
+      </div>
+
+      <div class="field-group dimensions-block">
+        <div class="group-title">L × B × H doos <span class="info-dot" title="Length × Width × Height">i</span></div>
+        <div class="dimension-strip">
+          <label class="mini-field"><span>Length (L)</span><div class="unit-input"><input id="box_length_mm" type="number" min="1" value="400" required><em>mm</em></div></label>
+          <b>×</b>
+          <label class="mini-field"><span>Width (B)</span><div class="unit-input"><input id="box_width_mm" type="number" min="1" value="300" required><em>mm</em></div></label>
+          <b>×</b>
+          <label class="mini-field"><span>Height (H)</span><div class="unit-input"><input id="box_height_mm" type="number" min="1" value="250" required><em>mm</em></div></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <span>Height calculation</span>
+        <div class="segmented-control">
+          <button type="button" class="active" data-height-mode="inclusive">Include pallet</button>
+          <button type="button" data-height-mode="exclusive">Exclude pallet</button>
+        </div>
+      </div>
+
+      <div class="compact-settings">
+        <label class="compact-card">
+          <span id="heightLabel">Maximale hoogte pallet totaal</span>
+          <div class="unit-input"><input id="max_total_height_mm" type="number" min="1" value="1800" required><em>mm</em></div>
+        </label>
+        <label class="compact-card">
+          <span>Case quantity</span>
+          <div class="unit-input"><input id="case_quantity" type="number" min="1" value="12" required><em>items</em></div>
+        </label>
+      </div>
+
+      <button class="primary-button" type="submit">▦ Calculate pallet</button>
+      <div id="formError" class="error-message" hidden></div>
+    </form>
+  </section>
+
+  <section class="panel result-panel" id="resultCard" tabindex="-1">
+    <header class="panel-heading result-heading">
+      <span>RESULT</span>
+      <small id="resultSubtitle">Europallet · 1200 × 800 × 144 mm</small>
+    </header>
+
+    <aside id="heightAdvice" class="advice-card">
+      <span class="advice-icon">i</span>
+      <p id="heightAdviceText">Calculate the pallet to see height advice.</p>
+      <strong>HEIGHT TIP</strong>
+    </aside>
+
+    <div class="metric-grid">
+      <article><span>Boxes / layer</span><strong id="boxesPerLayer">8</strong></article>
+      <article><span>Layers</span><strong id="layers">6</strong></article>
+      <article><span>Boxes / pallet</span><strong id="boxesPerPallet">48</strong></article>
+      <article><span>Pallet Qty</span><strong id="palletQuantity">576</strong></article>
+      <article><span>Total height</span><strong id="totalHeight">1644 mm</strong></article>
+    </div>
+
+    <section class="visual-card">
+      <div class="visual-title">Pallet visualization <small id="solverStatus"></small></div>
+      <div class="canvas-wrap"><canvas id="palletCanvas" width="1100" height="620"></canvas></div>
+      <div class="height-summary">
+        <span><small>Pallet height</small><strong id="palletHeight">144 mm</strong></span>
+        <span><small>Load height</small><strong id="loadHeight">1500 mm</strong></span>
+        <span><small>Total height</small><strong id="heightSummaryTotal">1644 mm</strong></span>
+      </div>
+    </section>
+  </section>
+</main>
+<script src="assets/optimizer.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
