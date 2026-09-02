@@ -11,6 +11,14 @@ function num(id){
   return v;
 }
 
+function reference(){
+  return (document.getElementById('reference')?.value||'').trim();
+}
+
+function safeName(value){
+  return value.toLowerCase().replace(/[^a-z0-9_-]+/gi,'_').replace(/^_+|_+$/g,'').slice(0,60);
+}
+
 function palletHeight(){
   if(palletMode==='custom')return num('custom_pallet_height_mm');
   return PalletOptimizer.PALLETS[document.getElementById('pallet_id').value].height_mm;
@@ -45,7 +53,7 @@ function setHeightMode(mode){
   input.value=mode==='exclusive'?Math.max(value-ph,1):value+ph;
   heightMode=mode;
   document.querySelectorAll('[data-height-mode]').forEach(b=>b.classList.toggle('active',b.dataset.heightMode===mode));
-  document.getElementById('heightLabel').textContent=mode==='inclusive'?'Maximale hoogte pallet totaal':'Maximum load height';
+  document.getElementById('heightLabel').textContent=mode==='inclusive'?'Maximum total pallet height':'Maximum load height';
 }
 
 function calculate({scroll=true}={}){
@@ -80,7 +88,7 @@ function update(data){
   text('resultSubtitle',`${data.pallet.name} · ${data.pallet.length_mm} × ${data.pallet.width_mm} × ${data.pallet.height_mm} mm`);
   text('solverStatus',data.optimality_proven?'Optimized':'Best found');
   const a=data.advice.minimum_reduction_for_gain;
-  text('heightAdviceText',a?`Tip: verlaag de dooshoogte met ${a.reduction_mm} mm voor ${a.new_layers} lagen`:'Tip: geen praktische hoogtebesparing gevonden voor een extra laag');
+  text('heightAdviceText',a?`Tip: reduce carton height by ${a.reduction_mm} mm for ${a.new_layers} layers`:'Tip: no practical height reduction found for an extra layer');
   draw(data);
 }
 
@@ -120,40 +128,66 @@ function roundRect(ctx,x,y,w,h,r,fill,stroke){
 function download(){
   if(!latestResult)return;
   const src=document.getElementById('palletCanvas'),c=document.createElement('canvas');
-  c.width=1600;c.height=1180;
+  c.width=1700;c.height=1320;
   const x=c.getContext('2d');
+  const ref=reference()||'No reference';
+  const carton=`${num('box_length_mm')} × ${num('box_width_mm')} × ${num('box_height_mm')} mm`;
+  const caseQty=num('case_quantity');
+  const palletQty=latestResult.boxes_per_pallet*caseQty;
+  const loadHeight=Math.max(latestResult.load_height_mm-latestResult.pallet.height_mm,0);
+  const enteredHeight=num('max_total_height_mm');
+  const maxHeightLabel=heightMode==='inclusive'?'Max height incl. pallet':'Max load height excl. pallet';
+
   x.fillStyle='#f6f8fc';x.fillRect(0,0,c.width,c.height);
-  x.fillStyle='#2563eb';x.fillRect(0,0,c.width,92);
-  x.fillStyle='#fff';x.font='800 34px Arial';x.fillText('Pallet Optimizer · Result',55,58);
-  x.fillStyle='#64748b';x.font='600 18px Arial';x.fillText(`${latestResult.pallet.name} · ${latestResult.pallet.length_mm} × ${latestResult.pallet.width_mm} × ${latestResult.pallet.height_mm} mm`,55,128);
+  x.fillStyle='#2563eb';x.fillRect(0,0,c.width,102);
+  x.fillStyle='#fff';x.font='800 36px Arial';x.fillText('Pallet Optimizer · Result',58,62);
+  x.font='600 18px Arial';x.fillText(ref,58,88);
+
+  x.fillStyle='#64748b';x.font='600 18px Arial';
+  x.fillText(`${latestResult.pallet.name} · ${latestResult.pallet.length_mm} × ${latestResult.pallet.width_mm} × ${latestResult.pallet.height_mm} mm`,58,140);
 
   const items=[
-    ['Box L × B × H',`${num('box_length_mm')} × ${num('box_width_mm')} × ${num('box_height_mm')} mm`],
-    ['Max pallet height',`${num('max_total_height_mm')} mm`],
+    ['Reference',ref],
+    ['Carton L × W × H',carton],
+    ['Case quantity',nf.format(caseQty)],
+    [maxHeightLabel,`${enteredHeight} mm`],
     ['Boxes / layer',nf.format(latestResult.boxes_per_layer)],
     ['Layers',nf.format(latestResult.layers)],
     ['Boxes / pallet',nf.format(latestResult.boxes_per_pallet)],
-    ['Pallet Qty',nf.format(latestResult.boxes_per_pallet*num('case_quantity'))],
-    ['Total height',`${latestResult.load_height_mm} mm`]
+    ['Pallet Qty',nf.format(palletQty)],
+    ['Pallet height',`${latestResult.pallet.height_mm} mm`],
+    ['Load height',`${loadHeight} mm`],
+    ['Total height',`${latestResult.load_height_mm} mm`],
+    ['Layout status',latestResult.optimality_proven?'Optimized':'Best found']
   ];
-  const startX=55,startY=160,cardW=205,cardH=88,gap=14;
+
+  const startX=58,startY=175,cardW=380,cardH=86,gapX=18,gapY=14;
   items.forEach((item,i)=>{
-    const px=startX+(i%4)*(cardW+gap),py=startY+Math.floor(i/4)*(cardH+gap);
+    const px=startX+(i%4)*(cardW+gapX),py=startY+Math.floor(i/4)*(cardH+gapY);
     roundRect(x,px,py,cardW,cardH,14,'#ffffff','#dbe3ef');
-    x.fillStyle='#64748b';x.font='700 15px Arial';x.fillText(item[0],px+16,py+27);
-    x.fillStyle='#0f172a';x.font='800 22px Arial';x.fillText(item[1],px+16,py+60);
+    x.fillStyle='#64748b';x.font='700 14px Arial';x.fillText(item[0],px+16,py+26);
+    x.fillStyle='#0f172a';x.font='800 20px Arial';
+    let value=String(item[1]);if(value.length>32)value=value.slice(0,30)+'…';
+    x.fillText(value,px+16,py+58);
   });
 
   const advice=latestResult.advice.minimum_reduction_for_gain;
-  roundRect(x,55,368,1490,58,18,'#fff7e8','#f2ad5c');
-  x.fillStyle='#ea7a16';x.beginPath();x.arc(84,397,16,0,Math.PI*2);x.fill();
-  x.fillStyle='#fff';x.font='800 18px Arial';x.fillText('i',80,403);
+  roundRect(x,58,490,1584,60,18,'#fff7e8','#f2ad5c');
+  x.fillStyle='#ea7a16';x.beginPath();x.arc(88,520,16,0,Math.PI*2);x.fill();
+  x.fillStyle='#fff';x.font='800 18px Arial';x.fillText('i',84,526);
   x.fillStyle='#7a3c05';x.font='800 18px Arial';
-  x.fillText(advice?`Tip: lower box height by ${advice.reduction_mm} mm to reach ${advice.new_layers} layers.`:'Tip: no practical height reduction found for an extra layer.',112,404);
+  x.fillText(advice?`Tip: reduce carton height by ${advice.reduction_mm} mm to reach ${advice.new_layers} layers.`:'Tip: no practical height reduction found for an extra layer.',116,527);
 
-  x.drawImage(src,120,455,1360,650);
-  x.fillStyle='#64748b';x.font='600 16px Arial';x.fillText(`Pallet height ${latestResult.pallet.height_mm} mm   ·   Load height ${Math.max(latestResult.load_height_mm-latestResult.pallet.height_mm,0)} mm   ·   Total height ${latestResult.load_height_mm} mm`,55,1140);
-  c.toBlob(blob=>{const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=`pallet_${num('box_length_mm')}x${num('box_width_mm')}x${num('box_height_mm')}mm.png`;a.click();URL.revokeObjectURL(u)},'image/png');
+  x.drawImage(src,120,585,1460,655);
+  x.fillStyle='#64748b';x.font='600 16px Arial';
+  x.fillText(`Generated by Pallet Optimizer · ${latestResult.boxes_per_layer} boxes/layer · ${latestResult.layers} layers · ${latestResult.boxes_per_pallet} boxes/pallet · ${palletQty} items/pallet`,58,1282);
+
+  c.toBlob(blob=>{
+    const u=URL.createObjectURL(blob),a=document.createElement('a');
+    const refPart=safeName(reference())||'pallet';
+    const sizePart=`${num('box_length_mm')}x${num('box_width_mm')}x${num('box_height_mm')}mm`;
+    a.href=u;a.download=`${refPart}_${sizePart}.png`;a.click();URL.revokeObjectURL(u);
+  },'image/png');
 }
 
 document.querySelectorAll('[data-pallet-mode]').forEach(b=>b.onclick=()=>setPalletMode(b.dataset.palletMode));
