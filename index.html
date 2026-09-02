@@ -24,60 +24,91 @@
   <section class="panel input-panel">
     <header class="panel-heading"><span>INPUT</span></header>
     <form id="calculatorForm" novalidate>
-      <div class="field compact-pallet">
-        <span>Pallet</span>
-        <div class="pallet-row">
-          <div class="segmented-control pallet-mode">
-            <button type="button" class="active" data-pallet-mode="preset">Preset</button>
-            <button type="button" data-pallet-mode="custom">Custom</button>
+
+      <section class="input-card">
+        <div class="input-card-heading">
+          <span class="card-number">01</span>
+          <div><strong>Pallet</strong><small>Select a standard pallet or enter custom dimensions.</small></div>
+        </div>
+        <div class="field compact-pallet">
+          <div class="pallet-row">
+            <div class="segmented-control pallet-mode">
+              <button type="button" class="active" data-pallet-mode="preset">Preset</button>
+              <button type="button" data-pallet-mode="custom">Custom</button>
+            </div>
+            <label id="presetPalletField" class="select-wrap">
+              <select id="pallet_id">
+                <option value="euro">Europallet · 1200 × 800 × 144 mm</option>
+                <option value="block">Block pallet · 1200 × 1000 × 144 mm</option>
+                <option value="half">Half pallet · 800 × 600 × 144 mm</option>
+              </select>
+            </label>
           </div>
-          <label id="presetPalletField" class="select-wrap">
-            <select id="pallet_id">
-              <option value="euro">Europallet · 1200 × 800 × 144 mm</option>
-              <option value="block">Block pallet · 1200 × 1000 × 144 mm</option>
-              <option value="half">Half pallet · 800 × 600 × 144 mm</option>
-            </select>
-          </label>
         </div>
-      </div>
-
-      <div class="custom-pallet-grid" id="customPalletFields" hidden>
-        <label class="mini-field"><span>Length</span><div class="unit-input"><input id="custom_pallet_length_mm" type="number" min="1" value="1200"><em>mm</em></div></label>
-        <label class="mini-field"><span>Width</span><div class="unit-input"><input id="custom_pallet_width_mm" type="number" min="1" value="800"><em>mm</em></div></label>
-        <label class="mini-field"><span>Height</span><div class="unit-input"><input id="custom_pallet_height_mm" type="number" min="1" value="144"><em>mm</em></div></label>
-      </div>
-
-      <div class="field-group dimensions-block">
-        <div class="group-title">L × B × H doos <span class="info-dot" title="Length × Width × Height">i</span></div>
-        <div class="dimension-strip">
-          <label class="mini-field"><span>Length (L)</span><div class="unit-input"><input id="box_length_mm" type="number" min="1" value="400" required><em>mm</em></div></label>
-          <b>×</b>
-          <label class="mini-field"><span>Width (B)</span><div class="unit-input"><input id="box_width_mm" type="number" min="1" value="300" required><em>mm</em></div></label>
-          <b>×</b>
-          <label class="mini-field"><span>Height (H)</span><div class="unit-input"><input id="box_height_mm" type="number" min="1" value="250" required><em>mm</em></div></label>
+        <div class="custom-pallet-grid" id="customPalletFields" hidden>
+          <label class="mini-field"><span>Length</span><div class="unit-input"><input id="custom_pallet_length_mm" type="number" min="1" value="1200"><em>mm</em></div></label>
+          <label class="mini-field"><span>Width</span><div class="unit-input"><input id="custom_pallet_width_mm" type="number" min="1" value="800"><em>mm</em></div></label>
+          <label class="mini-field"><span>Height</span><div class="unit-input"><input id="custom_pallet_height_mm" type="number" min="1" value="144"><em>mm</em></div></label>
         </div>
-      </div>
+      </section>
 
-      <div class="field">
-        <span>Height calculation</span>
-        <div class="segmented-control">
-          <button type="button" class="active" data-height-mode="inclusive">Include pallet</button>
-          <button type="button" data-height-mode="exclusive">Exclude pallet</button>
+      <section class="input-card">
+        <div class="input-card-heading">
+          <span class="card-number">02</span>
+          <div><strong>Carton</strong><small>Enter the outer carton dimensions and case quantity.</small></div>
         </div>
-      </div>
-
-      <div class="compact-settings">
-        <label class="compact-card">
-          <span id="heightLabel">Maximale hoogte pallet totaal</span>
-          <div class="unit-input"><input id="max_total_height_mm" type="number" min="1" value="1800" required><em>mm</em></div>
-        </label>
-        <label class="compact-card">
+        <div class="field-group dimensions-block">
+          <div class="group-title">L × W × H carton <span class="info-dot" title="Length × Width × Height">i</span></div>
+          <div class="dimension-strip">
+            <label class="mini-field"><span>Length (L)</span><div class="unit-input"><input id="box_length_mm" type="number" min="1" value="400" required><em>mm</em></div></label>
+            <b>×</b>
+            <label class="mini-field"><span>Width (W)</span><div class="unit-input"><input id="box_width_mm" type="number" min="1" value="300" required><em>mm</em></div></label>
+            <b>×</b>
+            <label class="mini-field"><span>Height (H)</span><div class="unit-input"><input id="box_height_mm" type="number" min="1" value="250" required><em>mm</em></div></label>
+          </div>
+        </div>
+        <label class="compact-card case-card">
           <span>Case quantity</span>
           <div class="unit-input"><input id="case_quantity" type="number" min="1" value="12" required><em>items</em></div>
         </label>
-      </div>
+      </section>
 
-      <button class="primary-button" type="submit">▦ Calculate pallet</button>
+      <section class="input-card">
+        <div class="input-card-heading">
+          <span class="card-number">03</span>
+          <div><strong>Maximum height</strong><small>Choose whether the entered height includes the pallet itself.</small></div>
+        </div>
+        <div class="field">
+          <div class="segmented-control">
+            <button type="button" class="active" data-height-mode="inclusive">Include pallet</button>
+            <button type="button" data-height-mode="exclusive">Exclude pallet</button>
+          </div>
+        </div>
+        <label class="compact-card max-height-card">
+          <span id="heightLabel">Maximum total pallet height</span>
+          <div class="unit-input"><input id="max_total_height_mm" type="number" min="1" value="1800" required><em>mm</em></div>
+        </label>
+      </section>
+
+      <section class="input-card reference-card">
+        <div class="input-card-heading">
+          <span class="card-number">04</span>
+          <div><strong>Reference</strong><small>Optional reference used in the downloaded result and filename.</small></div>
+        </div>
+        <label class="text-field">
+          <span>Reference</span>
+          <input id="reference" type="text" maxlength="80" placeholder="e.g. Action 123456 / Article ABC">
+        </label>
+      </section>
+
+      <section class="calculate-card">
+        <div>
+          <strong>Ready to calculate?</strong>
+          <small>The result will show capacity, height and pallet visualization.</small>
+        </div>
+        <button class="primary-button" type="submit">▦ Calculate pallet</button>
+      </section>
+
       <div id="formError" class="error-message" hidden></div>
     </form>
   </section>
@@ -115,6 +146,5 @@
 </main>
 <script src="assets/optimizer.js"></script>
 <script src="assets/app.js"></script>
-<!-- deploy trigger: 2026-08-03T11:30+02:00 -->
 </body>
 </html>
